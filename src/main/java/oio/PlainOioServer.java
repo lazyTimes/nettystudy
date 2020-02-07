@@ -1,6 +1,8 @@
 package oio;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,18 +21,21 @@ public class PlainOioServer {
      */
     public void server(int port) throws IOException {
         final ServerSocket serverSocket = new ServerSocket(port);
-        final Socket accept = serverSocket.accept();
         try{
-            while(true){
-                System.err.println("Server connect from"+accept);
+            for(int x = 0; x < 9; x++){
+                final Socket socketClient = serverSocket.accept();
+                System.err.println("Server connect from"+socketClient);
                 new Thread(new Runnable() {
                     public void run() {
                         OutputStream out = null;
                         try {
-                            out = accept.getOutputStream();
-                            out.write("Hello!".getBytes());
+                            out = socketClient.getOutputStream();
+                            out.write("测试".getBytes("utf-8"));
                             out.flush();
-                            out.close();
+                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socketClient.getInputStream()));
+                            String s = bufferedReader.readLine();
+                            System.err.println(s);
+                            bufferedReader.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
@@ -43,12 +48,17 @@ public class PlainOioServer {
                             }
                         }
                     }
-                });
+                }).start();
             }
 
         }catch (Exception e){
             e.printStackTrace();
         }
 
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        new PlainOioServer().server(9999);
     }
 }
